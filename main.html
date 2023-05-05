@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>2048 Game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>* {
+        box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #090b4e;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      
+      h1 {
+        text-align: center;
+        font-size: 48px;
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #776e65;
+      }
+      
+      .score-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      
+      .score {
+        font-size: 24px;
+        color: #776e65;
+      }
+      
+      .best-score {
+        font-size: 24px;
+        color: #776e65;
+      }
+      
+      .game-container {
+        position: relative;
+        background-color: #bbada0;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      
+      .game-over {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(238, 228, 218, 0.73);
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .game-over-message {
+        font-size: 48px;
+        color: #776e65;
+        margin-bottom: 20px;
+      }
+      
+      .restart-button {
+        font-size: 24px;
+        color: #776e65;
+        background-color: #8f7a66;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+      
+      .game-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 10px;
+        background-color: #bbada0;
+        border-radius: 10px;
+        padding: 10px;
+      }
+      
+      .tile {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 48px;
+        font-weight: bold;
+        color: #776e65;
+        background-color: #eee4da;
+        border-radius: 5px;
+        transition: background-color 0.2s ease-in-out;
+      }
+      
+      .tile-2 {
+        background-color: #eee4da;
+      }
+      
+      .tile-4 {
+        background-color: #ede0c8;
+      }
+      
+      .tile-8 {
+        background-color: #f2b179;
+      }
+      
+      .tile-16 {
+        background-color: #f59563;
+      }
+      
+      .tile-32 {
+        background-color: #f67c5f;
+      }
+      
+      .tile-64 {
+        background-color: #f65e3b;
+      }
+      
+      .tile-128 {
+        background-color: #edcf72;
+      }
+      
+      .tile-256 {
+        background-color: #edcc61;
+      }
+      
+      .tile-512 {
+        background-color: #edc850;
+      }
+      
+      .tile-1024 {
+        background-color: #edc53f;
+      }
+      
+      .tile-2048 {
+        background-color: #edc22e;
+      }
+      
+      .tile-4096 {
+        background-color: #3c3a32;
+        color: #fff;
+      }
+      
+      .tile-new {
+        background-color: #eee4da;
+        animation: new-tile 0.5s ease-in-out;
+      }
+      
+      @keyframes new-tile {
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>2048 Game</h1>
+      <div class="score-container">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="best-score">Best Score: <span id="best-score">0</span></div>
+      </div>
+      <div class="game-container">
+        <div class="game-board"></div>
+        <div class="game-over">
+          <div class="game-over-message">Game Over!</div>
+          <button class="restart-button">Restart</button>
+        </div>
+      </div>
+    </div>
+    <script>const board = document.querySelector('.game-board');
+        const scoreDisplay = document.querySelector('#score');
+        const bestScoreDisplay = document.querySelector('#best-score');
+        const gameOver = document.querySelector('.game-over');
+        const gameOverMessage = document.querySelector('.game-over-message');
+        const restartButton = document.querySelector('.restart-button');
+        
+        let score = 0;
+        let bestScore = 0;
+        let tiles = [];
+        
+        function startGame() {
+          score = 0;
+          scoreDisplay.textContent = score;
+          tiles = Array.from({ length: 16 }, () => 0);
+          addTile();
+          addTile();
+          updateBoard();
+        }
+        
+        function addTile() {
+          const emptyTiles = tiles.reduce((acc, tile, index) => {
+            if (tile === 0) {
+              acc.push(index);
+            }
+            return acc;
+          }, []);
+          if (emptyTiles.length === 0) {
+            return;
+          }
+          const randomIndex = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+          const randomValue = Math.random() < 0.9 ? 2 : 4;
+          tiles[randomIndex] = randomValue;
+          const tile = document.createElement('div');
+          tile.classList.add('tile', `tile-${randomValue}`, 'tile-new');
+          tile.textContent = randomValue;
+          board.appendChild(tile);
+          setTimeout(() => {
+            tile.classList.remove('tile-new');
+          }, 100);
+        }
+        
+        function updateBoard() {
+          board.innerHTML = '';
+          tiles.forEach((tile) => {
+            const tileElement = document.createElement('div');
+            tileElement.classList.add('tile', `tile-${tile}`);
+            tileElement.textContent = tile === 0 ? '' : tile;
+            board.appendChild(tileElement);
+          });
+        }
+        
+        function moveTiles(direction) {
+          let moved = false;
+          switch (direction) {
+            case 'up':
+              for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 3; j++) {
+                  const index = i + j * 4;
+                  if (tiles[index] !== 0) {
+                    let nextIndex = index;
+                    while (nextIndex >= 4 && tiles[nextIndex - 4] === 0) {
+                      nextIndex -= 4;
+                      moved = true;
+                    }
+                    if (nextIndex !== index) {
+                      tiles[nextIndex] = tiles[index];
+                      tiles[index] = 0;
+                    }
+                    if (nextIndex >= 4 && tiles[nextIndex - 4] === tiles[nextIndex]) {
+                      tiles[nextIndex - 4] *= 2;
+                      score += tiles[nextIndex - 4];
+                      tiles[nextIndex] = 0;
+                      moved = true;
+                    }
+                  }
+                }
+              }
+              break;
+            case 'down':
+              for (let i = 0; i < 4; i++) {
+                for (let j = 3; j > 0; j--) {
+                  const index = i + j * 4;
+                  if (tiles[index] !== 0) {
+                    let nextIndex = index;
+                    while (nextIndex <= 11 && tiles[nextIndex + 4] === 0) {
+                      nextIndex += 4;
+                      moved = true;
+                    }
+                    if (nextIndex !== index) {
+                      tiles[nextIndex] = tiles[index];
+                      tiles[index] = 0;
+                    }
+                    if (nextIndex <= 11 && tiles[nextIndex + 4] === tiles[nextIndex]) {
+                      tiles[nextIndex + 4] *= 2;
+                      score += tiles[nextIndex + 4];
+                      tiles[nextIndex] = 0;
+                      moved = true;
+                    }
+                  }
+                }
+              }
+              break;
+            case 'left':
+              for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 3; j++) {
+                  const index = i * 4 + j;
+                  if (tiles[index] !== 0) {
+                    let nextIndex = index;
+                    while (nextIndex % 4 !== 0 && tiles[nextIndex - 1] === 0) {
+                      nextIndex--;
+                      moved = true;
+                    }
+                    if (nextIndex !== index) {
+                      tiles[nextIndex] = tiles[index];
+                      tiles[index] = 0;
+                    }
+                    if (nextIndex % 4 !== 0 && tiles[nextIndex - 1] === tiles[nextIndex]) {
+                      tiles[nextIndex - 1] *= 2;
+                      score += tiles[nextIndex - 1];
+                      tiles[nextIndex] = 0;
+                      moved = true;
+                    }
+                  }
+                }
+              }
+              break;
+            case 'right':
+              for (let i = 0; i < 4; i++) {
+                for (let j = 3; j > 0; j--) {
+                  const index = i * 4 + j;
+                  if (tiles[index] !== 0) {
+                    let nextIndex = index;
+                    while (nextIndex % 4 !== 3 && tiles[nextIndex + 1] === 0) {
+                      nextIndex++;
+                      moved = true;
+                    }
+                    if (nextIndex !== index) {
+                      tiles[nextIndex] = tiles[index];
+                      tiles[index] = 0;
+                    }
+                    if (nextIndex % 4 !== 3 && tiles[nextIndex + 1] === tiles[nextIndex]) {
+                      tiles[nextIndex + 1] *= 2;
+                      score += tiles[nextIndex + 1];
+                      tiles[nextIndex] = 0;
+                      moved = true;
+                    }
+                  }
+                }
+              }
+              break;
+          }
+          if (moved) {
+            addTile();
+            updateBoard();
+            scoreDisplay.textContent = score;
+            if (score > bestScore) {
+              bestScore = score;
+              bestScoreDisplay.textContent = bestScore;
+            }
+            if (isGameOver()) {
+              gameOverMessage.textContent = 'Game Over!';
+              gameOver.style.display = 'flex';
+            }
+          }
+        }
+        
+        function isGameOver() {
+          if (tiles.includes(0)) {
+            return false;
+          }
+          for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+              const index = i * 4 + j;
+              if (j < 3 && tiles[index] === tiles[index + 1]) {
+                return false;
+              }
+              if (i < 3 && tiles[index] === tiles[index + 4]) {
+                return false;
+              }
+            }
+          }
+          return true;
+        }
+        
+        startGame();
+        
+        document.addEventListener('keydown', (event) => {
+          switch (event.key) {
+            case 'ArrowUp':
+              event.preventDefault();
+              moveTiles('up');
+              break;
+            case 'ArrowDown':
+              event.preventDefault();
+              moveTiles('down');
+              break;
+            case 'ArrowLeft':
+              event.preventDefault();
+              moveTiles('left');
+              break;
+            case 'ArrowRight':
+              event.preventDefault();
+              moveTiles('right');
+              break;
+          }
+        });
+        
+        restartButton.addEventListener('click', () => {
+          gameOver.style.display = 'none';
+          startGame();
+        });
+        </script>
+    <script src="script.js"></script>
+  </body>
+</html>
